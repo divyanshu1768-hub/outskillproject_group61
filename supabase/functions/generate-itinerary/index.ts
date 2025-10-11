@@ -337,27 +337,43 @@ VALIDATION RULES:
           ],
           generationConfig: {
             temperature: 0.7,
-            maxOutputTokens: 2048,
+            maxOutputTokens: 4096,
           },
         }),
       }
     );
 
     if (!geminiResponse.ok) {
-      const errorData = await geminiResponse.json();
-      console.error('Gemini API error:', errorData);
-      throw new Error(`Gemini API error: ${errorData.error?.message || 'Unknown error'}`);
+      const errorText = await geminiResponse.text();
+      console.error('Gemini API error status:', geminiResponse.status);
+      console.error('Gemini API error response:', errorText);
+
+      let errorMessage = 'Failed to generate itinerary';
+      try {
+        const errorData = JSON.parse(errorText);
+        errorMessage = errorData.error?.message || errorMessage;
+      } catch {
+        errorMessage = `API error (${geminiResponse.status})`;
+      }
+
+      throw new Error(errorMessage);
     }
 
     const geminiData = await geminiResponse.json();
+    console.log('Gemini response received, candidates:', geminiData.candidates?.length || 0);
 
     if (!geminiData.candidates || geminiData.candidates.length === 0) {
-      throw new Error('No response from Gemini API');
+      console.error('No candidates in Gemini response:', JSON.stringify(geminiData));
+      throw new Error('No response from Gemini API - please try again');
+    }
+
+    if (!geminiData.candidates[0].content || !geminiData.candidates[0].content.parts || !geminiData.candidates[0].content.parts[0]) {
+      console.error('Invalid response structure:', JSON.stringify(geminiData.candidates[0]));
+      throw new Error('Invalid response structure from Gemini API');
     }
 
     let itineraryContent = geminiData.candidates[0].content.parts[0].text;
-
-    console.log('Successfully received response from Gemini');
+    console.log('Response content length:', itineraryContent.length);
 
     let itineraryJson;
     try {
@@ -366,14 +382,22 @@ VALIDATION RULES:
       const jsonMatch = itineraryContent.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
         itineraryContent = jsonMatch[0];
+      } else {
+        console.error('No JSON object found in response');
+        throw new Error('Response does not contain valid JSON');
       }
 
       itineraryJson = JSON.parse(itineraryContent);
+
+      if (!itineraryJson.days || !Array.isArray(itineraryJson.days) || itineraryJson.days.length === 0) {
+        console.error('Invalid itinerary structure:', JSON.stringify(itineraryJson).substring(0, 200));
+        throw new Error('Invalid itinerary format');
+      }
+
     } catch (parseError) {
       console.error('Failed to parse JSON:', parseError);
-      console.error('Raw content:', itineraryContent);
-      console.error('Content length:', itineraryContent.length);
-      throw new Error('Failed to parse itinerary JSON from Roady response');
+      console.error('Raw content preview:', itineraryContent.substring(0, 500));
+      throw new Error('Failed to parse itinerary - please try again');
     }
 
     const response = {
