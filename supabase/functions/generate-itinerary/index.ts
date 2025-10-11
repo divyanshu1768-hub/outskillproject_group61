@@ -115,7 +115,7 @@ Deno.serve(async (req: Request) => {
           "Consider camping or budget motels to reduce accommodation costs",
           "Look for free attractions and scenic viewpoints"
         ],
-        note: "This is a mock response. Configure your Gemini API key for Roady-generated itineraries (see SETUP.md).",
+        note: `All costs shown are for ${requestData.people} people (entire group). This is a mock response. Configure your Gemini API key for Roady-generated itineraries (see SETUP.md).`,
       };
 
       return new Response(
@@ -162,10 +162,12 @@ ORIGINAL TRIP PARAMETERS:
 - Destination: ${requestData.destination}
 - Days: ${requestData.days}
 - Number of People: ${requestData.people}
-- Total Budget: ₹${requestData.budget} INR
+- Total Budget for Entire Group: ₹${requestData.budget} INR
 - Budget Per Person: ₹${Math.floor(Number(requestData.budget) / Number(requestData.people))} INR
 - Transport Mode: ${requestData.transportMode}
 - Interests: ${requestData.interests}
+
+CRITICAL REMINDER: All costs in the itinerary are for the ENTIRE GROUP of ${requestData.people} people, NOT per person. The "note" field must start with "All costs shown are for ${requestData.people} people (entire group)."
 
 MODIFICATION REQUIREMENTS:
 1. Apply the user's requested changes precisely
@@ -223,7 +225,7 @@ TRIP DETAILS:
 - Destination: ${requestData.destination}
 - Duration: ${requestData.days} days
 - Number of People: ${requestData.people}
-- Total Budget: ₹${requestData.budget} INR (₹${Math.floor(Number(requestData.budget) / Number(requestData.people))} per person)
+- Total Budget for Entire Group: ₹${requestData.budget} INR (₹${Math.floor(Number(requestData.budget) / Number(requestData.people))} per person)
 - Transport Mode: ${requestData.transportMode}
 - Interests: ${requestData.interests}
 
@@ -250,8 +252,9 @@ REQUIREMENTS - You MUST provide:
    - Include city/town name where you'll stay
    - Estimate per-night costs
 
-4. BUDGET BREAKDOWN:
-   - Provide realistic costs in INR for the ENTIRE GROUP of ${requestData.people} people
+4. BUDGET BREAKDOWN (ALL COSTS ARE FOR THE ENTIRE GROUP):
+   - CRITICAL: All costs shown must be for the ENTIRE GROUP of ${requestData.people} people, NOT per person
+   - In the "note" field, you MUST include: "All costs shown are for ${requestData.people} people (entire group)"
    - Calculate costs for: accommodation (total for group), food (total for group), activities (total for group), transport
    - Transport costs based on mode:
      * Car (own): fuel (~₹6-8/km), tolls, parking
@@ -300,11 +303,13 @@ IMPORTANT: Return ONLY valid JSON in this EXACT format (no additional text):
     "Pack snacks and drinks to reduce meal costs",
     "Book accommodations in advance for better rates"
   ],
-  "note": "Best time to visit is spring or fall. Book popular attractions in advance."
+  "note": "All costs shown are for ${requestData.people} people (entire group). Best time to visit is spring or fall. Book popular attractions in advance."
 }
 
 VALIDATION RULES:
 - Total estimated cost should be close to (but can slightly exceed) the provided budget
+- ALL COSTS MUST BE FOR THE ENTIRE GROUP OF ${requestData.people} PEOPLE, NOT PER PERSON
+- The "note" field MUST START WITH: "All costs shown are for ${requestData.people} people (entire group)."
 - Driving distances must be realistic and achievable
 - Activities must include time estimates
 - Each day should have 3-5 activities minimum
