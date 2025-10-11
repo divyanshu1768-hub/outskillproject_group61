@@ -15,35 +15,44 @@ VITE_SUPABASE_URL=your_supabase_url
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
 
-### OpenAI API Key (Required for AI Features)
+### Google Gemini API Key (Required for AI Features)
 
-To enable AI-powered itinerary generation, you need to configure an OpenAI API key.
+To enable AI-powered itinerary generation, you need to configure a Google Gemini API key.
 
-#### Step 1: Get Your OpenAI API Key
+#### Step 1: Get Your Gemini API Key
 
-1. Go to [OpenAI Platform](https://platform.openai.com/)
-2. Sign up or log in to your account
-3. Navigate to [API Keys](https://platform.openai.com/api-keys)
-4. Click "Create new secret key"
-5. Copy the generated API key (you won't be able to see it again!)
+1. Go to [Google AI Studio](https://aistudio.google.com/app/apikey)
+2. Sign in with your Google account
+3. Click "Create API key"
+4. Select an existing Google Cloud project or create a new one
+5. Copy the generated API key (keep it secure!)
 
-#### Step 2: Configure the API Key Locally
+**Note:** Gemini API has a generous free tier that includes:
+- 15 requests per minute
+- 1 million tokens per minute
+- 1,500 requests per day
 
-For local development, add your API key to the `.env` file:
+#### Step 2: Configure the API Key
+
+Open the `.env` file in the project root and replace the placeholder:
 
 ```env
-OPENAI_API_KEY=sk-your-actual-api-key-here
+GEMINI_API_KEY=your_actual_api_key_here
 ```
 
-#### Step 3: Configure the API Key in Supabase Edge Functions
+For example:
+```env
+GEMINI_API_KEY=AIzaSyC1234567890abcdefghijklmnopqrstuv
+```
 
-The OpenAI API key is used in the server-side Edge Function, so it needs to be configured in Supabase:
+#### Step 3: Verify the Setup
 
-**Note:** Supabase Edge Functions automatically have access to environment variables configured in your Supabase project. The secrets are managed server-side and are never exposed to the client.
+The Gemini API key is used in the server-side Edge Function, so it's automatically available via `Deno.env.get('GEMINI_API_KEY')`. Once configured:
 
-**To configure secrets in Supabase:**
-1. The `OPENAI_API_KEY` will be automatically available in your Edge Function via `Deno.env.get('OPENAI_API_KEY')`
-2. Secrets are managed securely and are not exposed in client-side code
+1. Fill out the trip planning form in the application
+2. Submit the form
+3. The AI will generate a personalized itinerary
+4. Check the browser console if you encounter any issues
 
 ## Security Best Practices
 
@@ -52,15 +61,15 @@ The OpenAI API key is used in the server-side Edge Function, so it needs to be c
    - Use `.env.example` as a template for other developers
 
 2. **Never expose API keys in client-side code**
-   - The OpenAI API key is only used in the Edge Function (server-side)
+   - The Gemini API key is only used in the Edge Function (server-side)
    - Client-side code only communicates with your Edge Function
 
 3. **Rotate your API keys regularly**
-   - If you suspect a key has been compromised, regenerate it immediately
+   - If you suspect a key has been compromised, regenerate it immediately in Google AI Studio
 
 4. **Monitor your API usage**
-   - Keep track of your OpenAI API usage to avoid unexpected charges
-   - Set up usage limits in your OpenAI dashboard
+   - Keep track of your Gemini API usage in the Google Cloud Console
+   - Set up usage alerts to avoid exceeding quotas
 
 ## File Structure
 
@@ -72,19 +81,38 @@ The OpenAI API key is used in the server-side Edge Function, so it needs to be c
 
 ## Testing the Setup
 
-1. Fill out the form in the application
-2. Submit the form
-3. Check the browser console for logs
-4. Currently, the app returns a mock response
-5. Once the OpenAI API key is configured, the edge function can be updated to use the actual API
+1. Ensure your `.env` file has the Gemini API key configured
+2. Fill out the trip planning form:
+   - Departure city
+   - Destination city
+   - Number of days
+   - Number of people
+   - Total budget
+   - Interests
+3. Click "Plan My Trip"
+4. The AI should generate a detailed itinerary within a few seconds
 
 ## Troubleshooting
 
-### "OpenAI API key not configured" warning
-- This is expected until you add a real API key
-- The application will continue to work with mock data
+### "Gemini API key not configured" warning
+- Check that your `.env` file exists in the project root
+- Verify the API key is correctly set: `GEMINI_API_KEY=your_key`
+- The application will use mock data until a valid key is configured
 
 ### API key not working
 - Verify the key is correct and hasn't been revoked
-- Check that you have credits available in your OpenAI account
+- Check that you haven't exceeded the free tier limits
 - Review the Edge Function logs in your Supabase dashboard
+- Ensure you've enabled the Generative Language API in Google Cloud Console
+
+### "Rate limit exceeded" error
+- Gemini free tier has limits: 15 requests/minute, 1,500 requests/day
+- Wait a few minutes before trying again
+- Consider upgrading to a paid plan for higher limits
+
+## Additional Resources
+
+- [Google AI Studio](https://aistudio.google.com/)
+- [Gemini API Documentation](https://ai.google.dev/docs)
+- [Gemini API Pricing](https://ai.google.dev/pricing)
+- [Supabase Edge Functions](https://supabase.com/docs/guides/functions)
