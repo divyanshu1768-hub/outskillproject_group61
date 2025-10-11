@@ -60,7 +60,7 @@ Deno.serve(async (req: Request) => {
 
     console.log('Received itinerary request:', requestData);
 
-    const geminiApiKey = Deno.env.get('GEMINI_API_KEY');
+    const geminiApiKey = Deno.env.get('GEMINI_API_KEY') || 'AIzaSyDAEjq9HGF6BuiNw54gF7mQlPngC1um6Dc';
 
     console.log('Gemini API key status:', geminiApiKey ? 'Configured' : 'Not configured');
 
