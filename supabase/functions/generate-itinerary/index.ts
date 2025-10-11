@@ -42,6 +42,7 @@ interface ItineraryRequest {
   budget: string;
   people: string;
   interests: string;
+  transportMode: string;
   editRequest?: string;
   currentItinerary?: Itinerary;
   conversationHistory?: ConversationHistoryEntry[];
@@ -163,6 +164,7 @@ ORIGINAL TRIP PARAMETERS:
 - Number of People: ${requestData.people}
 - Total Budget: ₹${requestData.budget} INR
 - Budget Per Person: ₹${Math.floor(Number(requestData.budget) / Number(requestData.people))} INR
+- Transport Mode: ${requestData.transportMode}
 - Interests: ${requestData.interests}
 
 MODIFICATION REQUIREMENTS:
@@ -222,16 +224,19 @@ TRIP DETAILS:
 - Duration: ${requestData.days} days
 - Number of People: ${requestData.people}
 - Total Budget: ₹${requestData.budget} INR (₹${Math.floor(Number(requestData.budget) / Number(requestData.people))} per person)
+- Transport Mode: ${requestData.transportMode}
 - Interests: ${requestData.interests}
 
 REQUIREMENTS - You MUST provide:
 
 1. ROUTE PLANNING:
-   - Calculate realistic driving distances between each location (in kilometers)
-   - Estimate actual driving time (in hours, considering rest stops)
-   - Suggest logical stopping points based on 4-6 hours of driving per day
-   - Consider scenic routes that match the traveler's interests
-   - Focus on Indian road conditions, highways (NH), and state highways
+   - Plan the route based on the specified transport mode: ${requestData.transportMode}
+   - For car/bike: Calculate realistic driving distances (km) and driving time
+   - For train/bus: Specify routes, stations, ticket costs, and travel time
+   - For flight: Include flight details, airport transfers, and costs
+   - For mixed: Specify which transport for each leg and detailed costs
+   - Consider Indian transport infrastructure and options
+   - Include specific cost estimates for the chosen transport mode
 
 2. DAILY ACTIVITIES:
    - Provide 3-5 specific activities per day with approximate durations
@@ -247,10 +252,18 @@ REQUIREMENTS - You MUST provide:
 
 4. BUDGET BREAKDOWN:
    - Provide realistic costs in INR for the ENTIRE GROUP of ${requestData.people} people
-   - Calculate costs for: accommodation (total for group), food (total for group), activities (total for group), transport (fuel/tolls)
+   - Calculate costs for: accommodation (total for group), food (total for group), activities (total for group), transport
+   - Transport costs based on mode:
+     * Car (own): fuel (~₹6-8/km), tolls, parking
+     * Rental car: rental fee (~₹2000-4000/day), fuel, tolls, parking
+     * Bike: fuel (~₹2-3/km), tolls, parking
+     * Bus: ticket prices per person
+     * Train: ticket prices per person (specify class)
+     * Flight: airfare per person, airport transfers
+     * Mixed: itemized costs for each transport mode used
    - All costs should be appropriate for India and scaled for ${requestData.people} people
-   - Add a "budgetTips" field with 2-3 money-saving suggestions if total cost is within 10% of budget
-   - Remember: accommodation costs scale with room requirements, food scales per person, activities may have group discounts
+   - Add a "budgetTips" field with 2-3 money-saving suggestions
+   - Include transport-specific tips (e.g., book train tickets in advance, carpooling)
 
 5. PRACTICAL INFORMATION:
    - Best times to visit each location

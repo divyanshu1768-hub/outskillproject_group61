@@ -13,6 +13,7 @@ interface TripFormData {
   budget: string;
   people: string;
   interests: string;
+  transportMode: string;
 }
 
 interface ItineraryDay {
@@ -56,6 +57,7 @@ function App() {
     budget: '',
     people: '',
     interests: '',
+    transportMode: 'car',
   });
 
   const [submittedData, setSubmittedData] = useState<TripFormData | null>(null);
@@ -623,6 +625,28 @@ function App() {
                     />
                   </div>
                 </div>
+              </div>
+
+              <div>
+                <label htmlFor="transportMode" className="flex items-center gap-2 text-sm font-semibold text-[#003049] mb-2">
+                  <Route className="w-4 h-4 text-[#F77F00]" />
+                  Mode of Transport
+                </label>
+                <select
+                  id="transportMode"
+                  value={formData.transportMode}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 rounded-lg border-2 border-[#F77F00]/30 focus:ring-2 focus:ring-[#D62828] focus:border-[#D62828] transition-all duration-200 outline-none bg-white"
+                >
+                  <option value="car">Car (Own Vehicle)</option>
+                  <option value="rental_car">Rental Car</option>
+                  <option value="bike">Bike/Motorcycle</option>
+                  <option value="bus">Bus</option>
+                  <option value="train">Train</option>
+                  <option value="flight">Flight</option>
+                  <option value="mixed">Mixed Transport</option>
+                </select>
+                <p className="text-sm text-[#003049]/60 mt-2">Choose your primary mode of transport for accurate cost estimates</p>
               </div>
 
               <div>
