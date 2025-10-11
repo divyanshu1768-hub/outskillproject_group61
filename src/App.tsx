@@ -182,10 +182,20 @@ function App() {
         body: JSON.stringify(formData),
       });
 
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('HTTP Error:', response.status, errorText);
+        throw new Error(`Server error: ${response.status}`);
+      }
+
       const data = await response.json();
       console.log('API Response:', data);
 
-      if (data.status === 'success') {
+      if (data.status === 'error') {
+        throw new Error(data.message || 'Failed to generate itinerary');
+      }
+
+      if (data.status === 'success' && data.itinerary) {
         setItineraryResponse(data.itinerary);
 
         const originalRequest = `Create a road trip from ${formData.departure} to ${formData.destination} for ${formData.days} days with a budget of ₹${formData.budget}. Interests: ${formData.interests}`;
@@ -199,7 +209,7 @@ function App() {
 
         saveToLocalStorage(formData, data.itinerary);
       } else {
-        setError(data.message || 'Failed to generate itinerary');
+        throw new Error('Invalid response format from server');
       }
     } catch (err) {
       console.error('Error calling API:', err);
@@ -236,10 +246,20 @@ function App() {
         }),
       });
 
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('HTTP Error:', response.status, errorText);
+        throw new Error(`Server error: ${response.status}`);
+      }
+
       const data = await response.json();
       console.log('Refinement API Response:', data);
 
-      if (data.status === 'success') {
+      if (data.status === 'error') {
+        throw new Error(data.message || 'Failed to refine itinerary');
+      }
+
+      if (data.status === 'success' && data.itinerary) {
         setItineraryResponse(data.itinerary);
 
         setConversationHistory(prev => [...prev, {
@@ -249,7 +269,7 @@ function App() {
           itinerary: data.itinerary,
         }]);
       } else {
-        setError(data.message || 'Failed to refine itinerary');
+        throw new Error('Invalid response format from server');
       }
     } catch (err) {
       console.error('Error refining itinerary:', err);
