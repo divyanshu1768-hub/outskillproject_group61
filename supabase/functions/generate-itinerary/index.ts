@@ -62,6 +62,8 @@ Deno.serve(async (req: Request) => {
 
     const geminiApiKey = Deno.env.get('GEMINI_API_KEY');
 
+    console.log('Gemini API key status:', geminiApiKey ? 'Configured' : 'Not configured');
+
     if (!geminiApiKey || geminiApiKey === 'your_gemini_api_key_here') {
       console.warn('Gemini API key not configured - using mock response');
 
@@ -299,7 +301,7 @@ VALIDATION RULES:
     console.log('Calling Gemini API...');
 
     const geminiResponse = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${geminiApiKey}`,
       {
         method: 'POST',
         headers: {
