@@ -1,7 +1,8 @@
-import { MapPin, DollarSign, Hotel, Calendar, Sparkles, Loader2, History, ChevronDown, ChevronUp, Edit2, Save, X, Map, Navigation, Clock, Lightbulb, Camera, Coffee, Utensils, Music, Mountain, Waves, TreePine, Castle, ShoppingBag, Landmark, Car, Activity } from 'lucide-react';
-import { useState } from 'react';
+import { MapPin, DollarSign, Hotel, Calendar, Sparkles, Loader2, History, ChevronDown, ChevronUp, Edit2, Save, X, Map, Navigation, Clock, Lightbulb, Camera, Coffee, Utensils, Music, Mountain, Waves, TreePine, Castle, ShoppingBag, Landmark, Car, Activity, Download } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
 import { TripMap } from './TripMap';
 import { BudgetBreakdownComponent } from './BudgetBreakdown';
+import { downloadAsJSON, downloadAsText, downloadAsHTML } from '../utils/downloadItinerary';
 
 function getActivityIcon(activity: string) {
   const activityLower = activity.toLowerCase();
@@ -94,6 +95,24 @@ export function ItineraryDisplay({ itinerary, onRefine, isRefining, conversation
   const [isHistoryExpanded, setIsHistoryExpanded] = useState(false);
   const [editingDayIndex, setEditingDayIndex] = useState<number | null>(null);
   const [editedDay, setEditedDay] = useState<ItineraryDay | null>(null);
+  const [showDownloadMenu, setShowDownloadMenu] = useState(false);
+  const downloadMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (downloadMenuRef.current && !downloadMenuRef.current.contains(event.target as Node)) {
+        setShowDownloadMenu(false);
+      }
+    };
+
+    if (showDownloadMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showDownloadMenu]);
 
   const extractStops = (): string[] => {
     const stops: string[] = [];
@@ -119,6 +138,17 @@ export function ItineraryDisplay({ itinerary, onRefine, isRefining, conversation
       onRefine(editRequest);
       setEditRequest('');
     }
+  };
+
+  const handleDownload = (format: 'json' | 'text' | 'html') => {
+    if (format === 'json') {
+      downloadAsJSON(itinerary, departure, destination);
+    } else if (format === 'text') {
+      downloadAsText(itinerary, departure, destination);
+    } else if (format === 'html') {
+      downloadAsHTML(itinerary, departure, destination);
+    }
+    setShowDownloadMenu(false);
   };
 
   const startEditingDay = (dayIndex: number) => {
@@ -181,13 +211,46 @@ export function ItineraryDisplay({ itinerary, onRefine, isRefining, conversation
     <div className="mt-8">
       <div className="bg-gradient-to-br from-blue-50 via-white to-green-50 rounded-2xl shadow-2xl border border-gray-200 overflow-hidden">
         <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-6">
-          <div className="flex items-center gap-3">
-            <div className="bg-white/20 backdrop-blur-sm rounded-lg p-2">
-              <MapPin className="w-7 h-7 text-white" />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="bg-white/20 backdrop-blur-sm rounded-lg p-2">
+                <MapPin className="w-7 h-7 text-white" />
+              </div>
+              <div>
+                <h3 className="text-2xl font-bold text-white">Your Road Trip Itinerary</h3>
+                <p className="text-blue-100 text-sm mt-1">A personalized journey crafted just for you</p>
+              </div>
             </div>
-            <div>
-              <h3 className="text-2xl font-bold text-white">Your Road Trip Itinerary</h3>
-              <p className="text-blue-100 text-sm mt-1">A personalized journey crafted just for you</p>
+            <div className="relative" ref={downloadMenuRef}>
+              <button
+                onClick={() => setShowDownloadMenu(!showDownloadMenu)}
+                className="flex items-center gap-2 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white px-4 py-2 rounded-lg transition-all duration-200 border border-white/30"
+              >
+                <Download className="w-5 h-5" />
+                <span className="font-medium">Download</span>
+              </button>
+              {showDownloadMenu && (
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
+                  <button
+                    onClick={() => handleDownload('html')}
+                    className="w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors text-gray-700 font-medium border-b border-gray-100"
+                  >
+                    📄 HTML (Printable)
+                  </button>
+                  <button
+                    onClick={() => handleDownload('text')}
+                    className="w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors text-gray-700 font-medium border-b border-gray-100"
+                  >
+                    📝 Text File
+                  </button>
+                  <button
+                    onClick={() => handleDownload('json')}
+                    className="w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors text-gray-700 font-medium rounded-b-lg"
+                  >
+                    💾 JSON Data
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
