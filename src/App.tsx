@@ -1,10 +1,11 @@
-import { Map, Route, Compass, MapPin, Calendar, DollarSign, Sparkles, Loader2, Download, Upload, RefreshCw, LogIn, LogOut, Save, BookmarkCheck, Users } from 'lucide-react';
+import { Map, Route, Compass, MapPin, Calendar, DollarSign, Sparkles, Loader2, Download, Upload, RefreshCw, LogIn, LogOut, Save, BookmarkCheck, Users, FileDown } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { ItineraryDisplay } from './components/ItineraryDisplay';
 import { AuthModal } from './components/AuthModal';
 import { SavedItineraries } from './components/SavedItineraries';
 import { useAuth } from './contexts/AuthContext';
 import { supabase } from './lib/supabase';
+import jsPDF from 'jspdf';
 
 interface TripFormData {
   departure: string;
@@ -78,7 +79,7 @@ function App() {
     setHasSavedItinerary(!!saved);
   }, []);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { id, value } = e.target;
     setFormData(prev => ({
       ...prev,
@@ -158,6 +159,187 @@ function App() {
       console.error('Failed to copy:', err);
       setError('Failed to copy to clipboard');
     });
+  };
+
+  const exportAsPDF = () => {
+    if (!itineraryResponse || !submittedData) return;
+
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = 20;
+    let yPosition = margin;
+
+    doc.setFillColor(214, 40, 40);
+    doc.rect(0, 0, pageWidth, 30, 'F');
+
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(22);
+    doc.setFont('helvetica', 'bold');
+    doc.text('ROAD TRIP ITINERARY', pageWidth / 2, 20, { align: 'center' });
+
+    yPosition = 45;
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+
+    doc.setFont('helvetica', 'bold');
+    doc.text('Trip Details:', margin, yPosition);
+    yPosition += 7;
+
+    doc.setFont('helvetica', 'normal');
+    doc.text(`From: ${submittedData.departure}`, margin, yPosition);
+    yPosition += 6;
+    doc.text(`To: ${submittedData.destination}`, margin, yPosition);
+    yPosition += 6;
+    doc.text(`Duration: ${submittedData.days} days`, margin, yPosition);
+    yPosition += 6;
+    doc.text(`Number of People: ${submittedData.people}`, margin, yPosition);
+    yPosition += 6;
+    doc.text(`Budget: Rs.${submittedData.budget}`, margin, yPosition);
+    yPosition += 6;
+    doc.text(`Transport Mode: ${submittedData.transportMode}`, margin, yPosition);
+    yPosition += 6;
+    doc.text(`Interests: ${submittedData.interests}`, margin, yPosition);
+    yPosition += 12;
+
+    itineraryResponse.days.forEach((day) => {
+      if (yPosition > pageHeight - 40) {
+        doc.addPage();
+        yPosition = margin;
+      }
+
+      doc.setFillColor(247, 127, 0);
+      doc.rect(margin, yPosition - 5, pageWidth - 2 * margin, 10, 'F');
+      doc.setTextColor(255, 255, 255);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(12);
+      doc.text(`Day ${day.day}: ${day.title}`, margin + 3, yPosition + 2);
+      yPosition += 12;
+
+      doc.setTextColor(0, 0, 0);
+      doc.setFontSize(9);
+
+      if (day.drivingDistance) {
+        doc.setFont('helvetica', 'italic');
+        doc.text(`Distance: ${day.drivingDistance} | Time: ${day.drivingTime || 'N/A'}`, margin, yPosition);
+        yPosition += 7;
+      }
+
+      doc.setFont('helvetica', 'bold');
+      doc.text('Activities:', margin, yPosition);
+      yPosition += 5;
+
+      doc.setFont('helvetica', 'normal');
+      day.activities.forEach((activity, index) => {
+        if (yPosition > pageHeight - 20) {
+          doc.addPage();
+          yPosition = margin;
+        }
+        const lines = doc.splitTextToSize(`${index + 1}. ${activity}`, pageWidth - 2 * margin - 5);
+        lines.forEach((line: string) => {
+          doc.text(line, margin + 3, yPosition);
+          yPosition += 5;
+        });
+      });
+
+      yPosition += 3;
+      doc.setFont('helvetica', 'bold');
+      doc.text('Accommodation:', margin, yPosition);
+      doc.setFont('helvetica', 'normal');
+      yPosition += 5;
+      const accommodationLines = doc.splitTextToSize(day.accommodation, pageWidth - 2 * margin - 5);
+      accommodationLines.forEach((line: string) => {
+        doc.text(line, margin + 3, yPosition);
+        yPosition += 5;
+      });
+
+      yPosition += 3;
+      doc.setFont('helvetica', 'bold');
+      doc.text(`Estimated Cost: Rs.${day.estimatedCost}`, margin, yPosition);
+      yPosition += 10;
+    });
+
+    if (yPosition > pageHeight - 50) {
+      doc.addPage();
+      yPosition = margin;
+    }
+
+    doc.setFillColor(0, 48, 73);
+    doc.rect(margin, yPosition, pageWidth - 2 * margin, 15, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(12);
+    doc.text(`TOTAL ESTIMATED COST: Rs.${itineraryResponse.totalEstimatedCost}`, margin + 3, yPosition + 10);
+    yPosition += 20;
+
+    if (itineraryResponse.budgetBreakdown) {
+      doc.setTextColor(0, 0, 0);
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Budget Breakdown:', margin, yPosition);
+      yPosition += 7;
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      doc.text(`Accommodation: Rs.${itineraryResponse.budgetBreakdown.accommodation}`, margin + 3, yPosition);
+      yPosition += 5;
+      doc.text(`Food: Rs.${itineraryResponse.budgetBreakdown.food}`, margin + 3, yPosition);
+      yPosition += 5;
+      doc.text(`Activities: Rs.${itineraryResponse.budgetBreakdown.activities}`, margin + 3, yPosition);
+      yPosition += 5;
+      doc.text(`Transport: Rs.${itineraryResponse.budgetBreakdown.transport}`, margin + 3, yPosition);
+      yPosition += 10;
+    }
+
+    if (itineraryResponse.budgetTips && itineraryResponse.budgetTips.length > 0) {
+      if (yPosition > pageHeight - 40) {
+        doc.addPage();
+        yPosition = margin;
+      }
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10);
+      doc.text('Budget Tips:', margin, yPosition);
+      yPosition += 7;
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      itineraryResponse.budgetTips.forEach((tip) => {
+        const tipLines = doc.splitTextToSize(`• ${tip}`, pageWidth - 2 * margin - 5);
+        tipLines.forEach((line: string) => {
+          if (yPosition > pageHeight - 20) {
+            doc.addPage();
+            yPosition = margin;
+          }
+          doc.text(line, margin + 3, yPosition);
+          yPosition += 5;
+        });
+      });
+      yPosition += 5;
+    }
+
+    if (itineraryResponse.note) {
+      if (yPosition > pageHeight - 30) {
+        doc.addPage();
+        yPosition = margin;
+      }
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10);
+      doc.text('Important Note:', margin, yPosition);
+      yPosition += 7;
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      const noteLines = doc.splitTextToSize(itineraryResponse.note, pageWidth - 2 * margin - 5);
+      noteLines.forEach((line: string) => {
+        if (yPosition > pageHeight - 20) {
+          doc.addPage();
+          yPosition = margin;
+        }
+        doc.text(line, margin + 3, yPosition);
+        yPosition += 5;
+      });
+    }
+
+    const fileName = `${submittedData.departure}-to-${submittedData.destination}-itinerary.pdf`;
+    doc.save(fileName);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -326,6 +508,7 @@ function App() {
       budget: saved.budget.toString(),
       people: saved.people?.toString() || '2',
       interests: saved.interests,
+      transportMode: 'car',
     });
     setSubmittedData({
       departure: saved.departure,
@@ -334,6 +517,7 @@ function App() {
       budget: saved.budget.toString(),
       people: saved.people?.toString() || '2',
       interests: saved.interests,
+      transportMode: 'car',
     });
     setItineraryResponse(saved.itinerary_data);
     setCurrentItineraryId(saved.id);
@@ -758,7 +942,16 @@ function App() {
                 >
                   <Download className="w-5 h-5" />
                   <span className="hidden sm:inline">Export as Text</span>
-                  <span className="sm:hidden">Export</span>
+                  <span className="sm:hidden">Text</span>
+                </button>
+                <button
+                  onClick={exportAsPDF}
+                  className="tooltip bg-gradient-to-r from-[#D62828] to-[#F77F00] hover:from-[#D62828]/90 hover:to-[#F77F00]/90 text-white font-semibold px-5 py-3 rounded-lg shadow-lg transition-all duration-200 hover:shadow-xl hover:scale-105 flex items-center gap-2"
+                  data-tooltip="Download itinerary as PDF"
+                >
+                  <FileDown className="w-5 h-5" />
+                  <span className="hidden sm:inline">Download PDF</span>
+                  <span className="sm:hidden">PDF</span>
                 </button>
                 <button
                   onClick={() => {
@@ -774,6 +967,7 @@ function App() {
                       budget: '',
                       people: '',
                       interests: '',
+                      transportMode: 'car',
                     });
                   }}
                   className="tooltip bg-gradient-to-r from-[#D62828] to-[#F77F00] hover:from-[#D62828]/90 hover:to-[#F77F00]/90 text-white font-semibold px-5 py-3 rounded-lg shadow-lg transition-all duration-200 hover:shadow-xl hover:scale-105 flex items-center gap-2"
