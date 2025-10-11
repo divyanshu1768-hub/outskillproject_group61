@@ -322,6 +322,7 @@ function App() {
       destination: saved.destination,
       days: saved.days.toString(),
       budget: saved.budget.toString(),
+      people: saved.people?.toString() || '2',
       interests: saved.interests,
     });
     setSubmittedData({
@@ -329,6 +330,7 @@ function App() {
       destination: saved.destination,
       days: saved.days.toString(),
       budget: saved.budget.toString(),
+      people: saved.people?.toString() || '2',
       interests: saved.interests,
     });
     setItineraryResponse(saved.itinerary_data);
@@ -746,6 +748,7 @@ function App() {
                       destination: '',
                       days: '',
                       budget: '',
+                      people: '',
                       interests: '',
                     });
                   }}
