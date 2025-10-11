@@ -316,7 +316,7 @@ function App() {
     }
   };
 
-  const loadSavedItinerary = (saved: any) => {
+  const loadSavedItinerary = (saved: { id: string; departure: string; destination: string; days: number; budget: number; people?: number; interests: string; itinerary_data: Itinerary }) => {
     setFormData({
       departure: saved.departure,
       destination: saved.destination,

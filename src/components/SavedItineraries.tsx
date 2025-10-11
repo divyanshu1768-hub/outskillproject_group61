@@ -3,6 +3,27 @@ import { Calendar, MapPin, DollarSign, Trash2, Eye, Loader2 } from 'lucide-react
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 
+interface ItineraryData {
+  days: Array<{
+    day: number;
+    title: string;
+    drivingDistance?: string;
+    drivingTime?: string;
+    activities: string[];
+    accommodation: string;
+    estimatedCost: number;
+  }>;
+  totalEstimatedCost: number;
+  budgetBreakdown?: {
+    accommodation: number;
+    food: number;
+    activities: number;
+    transport: number;
+  };
+  budgetTips?: string[];
+  note?: string;
+}
+
 interface SavedItinerary {
   id: string;
   title: string;
@@ -10,8 +31,9 @@ interface SavedItinerary {
   destination: string;
   days: number;
   budget: number;
+  people?: number;
   interests: string;
-  itinerary_data: any;
+  itinerary_data: ItineraryData;
   created_at: string;
 }
 
@@ -55,7 +77,7 @@ export function SavedItineraries({ onLoadItinerary }: SavedItinerariesProps) {
       const { error } = await supabase.from('itineraries').delete().eq('id', id);
       if (error) throw error;
       setItineraries(itineraries.filter((i) => i.id !== id));
-    } catch (err) {
+    } catch {
       alert('Failed to delete itinerary');
     }
   };

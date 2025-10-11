@@ -150,7 +150,7 @@ export function ItineraryDisplay({ itinerary, onRefine, isRefining, conversation
     }
   };
 
-  const updateEditedDayField = (field: keyof ItineraryDay, value: any) => {
+  const updateEditedDayField = (field: keyof ItineraryDay, value: string | number | string[]) => {
     if (editedDay) {
       setEditedDay({ ...editedDay, [field]: value });
     }

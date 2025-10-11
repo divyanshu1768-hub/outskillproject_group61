@@ -12,6 +12,29 @@ interface ConversationHistoryEntry {
   timestamp: string;
 }
 
+interface ItineraryDay {
+  day: number;
+  title: string;
+  drivingDistance?: string;
+  drivingTime?: string;
+  activities: string[];
+  accommodation: string;
+  estimatedCost: number;
+}
+
+interface Itinerary {
+  days: ItineraryDay[];
+  totalEstimatedCost: number;
+  budgetBreakdown?: {
+    accommodation: number;
+    food: number;
+    activities: number;
+    transport: number;
+  };
+  budgetTips?: string[];
+  note?: string;
+}
+
 interface ItineraryRequest {
   departure: string;
   destination: string;
@@ -20,7 +43,7 @@ interface ItineraryRequest {
   people: string;
   interests: string;
   editRequest?: string;
-  currentItinerary?: any;
+  currentItinerary?: Itinerary;
   conversationHistory?: ConversationHistoryEntry[];
 }
 
