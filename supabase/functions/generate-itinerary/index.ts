@@ -172,12 +172,13 @@ CRITICAL REMINDER: All costs in the itinerary are for the ENTIRE GROUP of ${requ
 MODIFICATION REQUIREMENTS:
 1. Apply the user's requested changes precisely
 2. Maintain realistic road trip logistics (driving times, distances)
-3. Keep activities with time estimates in format: "Activity (duration)"
-4. Update budget breakdown to reflect any cost changes
+3. Keep activities with detailed time estimates and costs in format: "Activity (time, cost)"
+4. Update budget breakdown to reflect any cost changes with detailed transport breakdown
 5. Preserve all elements not mentioned in the edit request
 6. Ensure driving distances and times remain realistic
-7. If adding activities, include duration estimates
+7. If adding activities, include duration estimates AND cost estimates
 8. If budget changes significantly, update budgetTips accordingly
+9. Maintain detailed fuel, toll, and parking cost breakdowns in the note field
 
 IMPORTANT: Return ONLY valid JSON in this EXACT format (no additional text):
 {
@@ -188,28 +189,32 @@ IMPORTANT: Return ONLY valid JSON in this EXACT format (no additional text):
       "drivingDistance": "245 km",
       "drivingTime": "4.5 hours",
       "activities": [
-        "Depart from [City] (8:00 AM)",
-        "Stop at [Landmark] (1 hour)",
-        "Lunch at [Location] (1 hour)",
-        "Visit [Attraction] (2 hours)",
-        "Check into hotel (6:00 PM)"
+        "Depart from [City] (7:00 AM)",
+        "Breakfast at Highway Dhaba (8:00 AM - 8:45 AM, ₹400 for group)",
+        "Fuel stop (9:00 AM, ₹500 estimated)",
+        "Visit [Landmark] (10:00 AM - 12:00 PM, Entry: ₹200 per person)",
+        "Lunch at [Restaurant] (12:30 PM - 1:30 PM, ₹800 for group)",
+        "Visit [Attraction] (2:00 PM - 4:00 PM, Entry: ₹300 per person)",
+        "Check into hotel (5:00 PM, Parking: ₹100)",
+        "Dinner at local restaurant (7:00 PM - 8:30 PM, ₹1,000 for group)"
       ],
-      "accommodation": "Mid-range hotel in [City]",
-      "estimatedCost": 150
+      "accommodation": "Mid-range hotel in [City] - AC room with WiFi (₹2,500 per night)",
+      "estimatedCost": 6500
     }
   ],
-  "totalEstimatedCost": 500,
+  "totalEstimatedCost": 15000,
   "budgetBreakdown": {
-    "accommodation": 200,
-    "food": 150,
-    "activities": 100,
-    "transport": 50
+    "accommodation": 5000,
+    "food": 4000,
+    "activities": 2000,
+    "transport": 4000
   },
   "budgetTips": [
-    "Pack snacks and drinks to reduce meal costs",
-    "Book accommodations in advance for better rates"
+    "Pack snacks and drinks to reduce meal costs on the road",
+    "Book accommodations in advance for better rates",
+    "Fill fuel before toll plazas where prices are typically lower"
   ],
-  "note": "Best time to visit is spring or fall. Book popular attractions in advance."
+  "note": "All costs shown are for ${requestData.people} people (entire group). Transport breakdown: Fuel (245 km × ₹8/km = ₹1,960) + Tolls (₹600) + Parking (₹200) = ₹2,760. Best time to visit is October to March."
 }
 
 CONSISTENCY RULES:
@@ -241,32 +246,52 @@ REQUIREMENTS - You MUST provide:
    - Include specific cost estimates for the chosen transport mode
 
 2. DAILY ACTIVITIES:
-   - Provide 3-5 specific activities per day with approximate durations
-   - Format: "Activity name (duration)" e.g., "Visit Grand Canyon (3 hours)"
-   - Include rest/meal breaks in the schedule
+   - Provide 5-7 specific activities per day with approximate durations and costs
+   - Format with cost info: "Visit [Attraction] ([duration], Entry: ₹[amount] per person)" or "Visit [Attraction] ([duration], Free)"
+   - Examples:
+     * "Visit Amber Fort (3 hours, Entry: ₹550 per person, Elephant ride optional: ₹1,200)"
+     * "Breakfast at local dhaba (1 hour, ₹400 for 2 people)"
+     * "Explore Promenade Beach (1.5 hours, Free)"
+   - Include ALL meals (breakfast, lunch, dinner) with estimated costs for the group
+   - Include rest/fuel stops with timing and costs
    - Match activities to stated interests
    - Mix free/low-cost activities with paid attractions
+   - Specify exact timing for each activity (e.g., "8:00 AM - 9:00 AM")
 
 3. ACCOMMODATION:
-   - Suggest specific types of lodging appropriate for the budget
+   - Suggest specific types of lodging appropriate for the budget with names/examples
    - Include city/town name where you'll stay
-   - Estimate per-night costs
+   - Estimate per-night costs for the entire group (e.g., "₹2,500-3,000 per night for double room")
+   - Mention amenities (AC, WiFi, breakfast included, etc.)
+   - Provide budget alternatives (e.g., "Budget: Guesthouse ₹1,500 | Mid-range: Hotel ₹3,000 | Luxury: Resort ₹6,000")
 
 4. BUDGET BREAKDOWN (ALL COSTS ARE FOR THE ENTIRE GROUP):
    - CRITICAL: All costs shown must be for the ENTIRE GROUP of ${requestData.people} people, NOT per person
-   - In the "note" field, you MUST include: "All costs shown are for ${requestData.people} people (entire group)"
-   - Calculate costs for: accommodation (total for group), food (total for group), activities (total for group), transport
-   - Transport costs based on mode:
-     * Car (own): fuel (~₹6-8/km), tolls, parking
-     * Rental car: rental fee (~₹2000-4000/day), fuel, tolls, parking
-     * Bike: fuel (~₹2-3/km), tolls, parking
-     * Bus: ticket prices per person
-     * Train: ticket prices per person (specify class)
-     * Flight: airfare per person, airport transfers
-     * Mixed: itemized costs for each transport mode used
+   - In the "note" field, you MUST include detailed transport cost breakdown with: "All costs shown are for ${requestData.people} people (entire group). Transport: [specific breakdown]"
+   - Calculate costs for: accommodation (total for group), food (total for group), activities (total for group), transport (total for group)
+   - Transport costs MUST be itemized and detailed based on mode:
+     * Car (own):
+       - Fuel: Calculate total distance × ₹7-8/km (specify mileage, e.g., "580 km × ₹8/km = ₹4,640")
+       - Tolls: Estimate based on route (e.g., "₹500-800 for major highways")
+       - Parking: Daily parking at attractions/hotels (e.g., "₹200-300 total")
+       - Example: "Fuel ₹4,640 + Tolls ₹600 + Parking ₹250 = ₹5,490"
+     * Rental car:
+       - Car rental: ₹2,500-4,000/day × number of days
+       - Fuel: Total distance × ₹7-8/km
+       - Tolls: Estimate based on route
+       - Parking: Daily parking costs
+       - Insurance/deposit: If applicable
+     * Bike:
+       - Fuel: Total distance × ₹2-3/km (better mileage than car)
+       - Tolls: Same as car tolls
+       - Parking: Minimal (₹20-50/day)
+     * Bus: Ticket prices per person × number of people, specify bus type (AC/Non-AC)
+     * Train: Ticket prices per person × number of people (specify class: Sleeper/3AC/2AC/1AC)
+     * Flight: Airfare per person × number of people + airport transfers (₹500-1000 per person)
+     * Mixed: Itemize each transport segment with detailed costs
    - All costs should be appropriate for India and scaled for ${requestData.people} people
-   - Add a "budgetTips" field with 2-3 money-saving suggestions
-   - Include transport-specific tips (e.g., book train tickets in advance, carpooling)
+   - Add a "budgetTips" field with 3-5 practical money-saving suggestions
+   - Include transport-specific tips (e.g., "Book train tickets 60 days in advance for lowest fares", "Fill fuel before toll plazas for better prices")
 
 5. PRACTICAL INFORMATION:
    - Best times to visit each location
@@ -282,28 +307,34 @@ IMPORTANT: Return ONLY valid JSON in this EXACT format (no additional text):
       "drivingDistance": "245 km",
       "drivingTime": "4.5 hours",
       "activities": [
-        "Depart from [City] (8:00 AM)",
-        "Stop at [Landmark] (1 hour)",
-        "Lunch at [Location] (1 hour)",
-        "Visit [Attraction] (2 hours)",
-        "Check into hotel (6:00 PM)"
+        "Depart from [City] (7:00 AM)",
+        "Breakfast at Highway Dhaba (8:00 AM - 8:45 AM, ₹400 for group)",
+        "Fuel stop (9:00 AM, ₹500 estimated)",
+        "Visit [Landmark] (10:00 AM - 12:00 PM, Entry: ₹200 per person)",
+        "Lunch at [Restaurant] (12:30 PM - 1:30 PM, ₹800 for group)",
+        "Visit [Attraction] (2:00 PM - 4:00 PM, Entry: ₹300 per person)",
+        "Check into hotel (5:00 PM, Parking: ₹100)",
+        "Dinner at local restaurant (7:00 PM - 8:30 PM, ₹1,000 for group)"
       ],
-      "accommodation": "Mid-range hotel in [City]",
-      "estimatedCost": 150
+      "accommodation": "Mid-range hotel in [City] - AC room with WiFi and breakfast (₹2,500 per night)",
+      "estimatedCost": 6500
     }
   ],
-  "totalEstimatedCost": 500,
+  "totalEstimatedCost": 15000,
   "budgetBreakdown": {
-    "accommodation": 200,
-    "food": 150,
-    "activities": 100,
-    "transport": 50
+    "accommodation": 5000,
+    "food": 4000,
+    "activities": 2000,
+    "transport": 4000
   },
   "budgetTips": [
-    "Pack snacks and drinks to reduce meal costs",
-    "Book accommodations in advance for better rates"
+    "Pack snacks and drinks to reduce meal costs on the road",
+    "Book accommodations in advance for better rates (save 20-30%)",
+    "Fill fuel before toll plazas where prices are typically lower",
+    "Use government tourism websites for attraction passes to save money",
+    "Travel during weekdays to avoid weekend surge pricing"
   ],
-  "note": "All costs shown are for ${requestData.people} people (entire group). Best time to visit is spring or fall. Book popular attractions in advance."
+  "note": "All costs shown are for ${requestData.people} people (entire group). Transport breakdown: Fuel (245 km × ₹8/km = ₹1,960) + Tolls (₹600) + Parking (₹200) = ₹2,760. Best time to visit is October to March. Book popular attractions in advance during peak season."
 }
 
 VALIDATION RULES:
