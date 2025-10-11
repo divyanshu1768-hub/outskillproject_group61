@@ -498,7 +498,7 @@ function App() {
           </h2>
 
           <p className="text-lg sm:text-xl text-[#003049]/70 mb-8 max-w-2xl mx-auto leading-relaxed px-4">
-            AI-powered road trip itineraries tailored to your interests, budget, and timeline
+            Roady-powered road trip itineraries tailored to your interests, budget, and timeline
           </p>
 
           {!itineraryResponse && (
@@ -696,7 +696,7 @@ function App() {
                 <div className="text-center space-y-3">
                   <h3 className="text-2xl font-bold text-gray-900">Crafting Your Perfect Journey</h3>
                   <p className="text-gray-600 max-w-md">
-                    Our AI is analyzing your preferences and creating a personalized itinerary just for you...
+                    Roady is analyzing your preferences and creating a personalized itinerary just for you...
                   </p>
                 </div>
 
@@ -812,9 +812,9 @@ function App() {
               <div className="flex items-center justify-center w-16 h-16 bg-gradient-to-br from-[#D62828] to-[#F77F00] rounded-full mb-6 mx-auto">
                 <Sparkles className="w-8 h-8 text-white" />
               </div>
-              <h4 className="text-xl font-bold text-[#003049] text-center mb-3">2. AI Creates Your Plan</h4>
+              <h4 className="text-xl font-bold text-[#003049] text-center mb-3">2. Roady Creates Your Plan</h4>
               <p className="text-[#003049]/70 text-center">
-                Our AI analyzes thousands of routes and attractions to build your perfect itinerary
+                Roady analyzes thousands of routes and attractions to build your perfect itinerary
               </p>
             </div>
 
@@ -956,7 +956,7 @@ function App() {
             </div>
             <h3 className="text-xl font-semibold text-gray-900 mb-3">Smart Route Planning</h3>
             <p className="text-gray-600 leading-relaxed">
-              AI-powered route optimization to help you discover the best stops and scenic routes along your journey.
+              Roady-powered route optimization to help you discover the best stops and scenic routes along your journey.
             </p>
           </div>
 

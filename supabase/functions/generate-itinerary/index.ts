@@ -114,7 +114,7 @@ Deno.serve(async (req: Request) => {
           "Consider camping or budget motels to reduce accommodation costs",
           "Look for free attractions and scenic viewpoints"
         ],
-        note: "This is a mock response. Configure your Gemini API key for AI-generated itineraries (see SETUP.md).",
+        note: "This is a mock response. Configure your Gemini API key for Roady-generated itineraries (see SETUP.md).",
       };
 
       return new Response(
@@ -348,7 +348,7 @@ VALIDATION RULES:
     } catch (parseError) {
       console.error('Failed to parse JSON:', parseError);
       console.error('Raw content:', itineraryContent);
-      throw new Error('Failed to parse itinerary JSON from AI response');
+      throw new Error('Failed to parse itinerary JSON from Roady response');
     }
 
     const response = {

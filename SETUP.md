@@ -15,9 +15,9 @@ VITE_SUPABASE_URL=your_supabase_url
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
 
-### Google Gemini API Key (Required for AI Features)
+### Google Gemini API Key (Required for Roady Features)
 
-To enable AI-powered itinerary generation, you need to configure a Google Gemini API key.
+To enable Roady-powered itinerary generation, you need to configure a Google Gemini API key.
 
 #### Step 1: Get Your Gemini API Key
 
@@ -51,7 +51,7 @@ The Gemini API key is used in the server-side Edge Function, so it's automatical
 
 1. Fill out the trip planning form in the application
 2. Submit the form
-3. The AI will generate a personalized itinerary
+3. Roady will generate a personalized itinerary
 4. Check the browser console if you encounter any issues
 
 ## Security Best Practices
@@ -90,7 +90,7 @@ The Gemini API key is used in the server-side Edge Function, so it's automatical
    - Total budget
    - Interests
 3. Click "Plan My Trip"
-4. The AI should generate a detailed itinerary within a few seconds
+4. Roady should generate a detailed itinerary within a few seconds
 
 ## Troubleshooting
 
