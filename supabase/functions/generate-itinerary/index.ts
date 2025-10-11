@@ -362,10 +362,17 @@ VALIDATION RULES:
     let itineraryJson;
     try {
       itineraryContent = itineraryContent.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+
+      const jsonMatch = itineraryContent.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        itineraryContent = jsonMatch[0];
+      }
+
       itineraryJson = JSON.parse(itineraryContent);
     } catch (parseError) {
       console.error('Failed to parse JSON:', parseError);
       console.error('Raw content:', itineraryContent);
+      console.error('Content length:', itineraryContent.length);
       throw new Error('Failed to parse itinerary JSON from Roady response');
     }
 
